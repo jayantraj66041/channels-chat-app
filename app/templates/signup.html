@@ -9,7 +9,7 @@
                 <p class="lead p-0 m-0 fw-normal text-muted">User Signup</p>
             </div>
             <div class="card-body">
-                <form action="" method="post">
+                <form action="{% url 'signup' %}" method="post">
                     {% csrf_token %}
                     <div class="row">
                         <div class="mb-2 col-6">

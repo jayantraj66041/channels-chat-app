@@ -1,0 +1,55 @@
+{% extends "loginbase.html" %}
+{% block title %}Name{% endblock title %}
+
+{% block columns %}
+<div class="col-lg-9">
+    <div class="card shadow-sm">
+        <div class="card-header">
+            {{receiver.first_name}} {{receiver.last_name}}
+        </div>
+        <div class="card-body" id="message" style="height: 370px; overflow-y: auto;">
+            <div class="row">
+                <h4 class="m-0"><span class="badge bg-secondary rounded-pill">Hello, How are you?</span></h4>
+            </div>
+            <div class="row">
+                <h4><span class="badge bg-primary float-end rounded-pill">I am fine. You?</span></h4=>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="btn-group w-100">
+                <input type="text" name="msg" id="msg" placeholder="Let's chat..." class="form-control form-control-lg">
+                <button type="button" id="send" class="btn btn-primary">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock columns %}
+
+{% block javascript %}
+
+<script>
+    let socket = new WebSocket(
+        'ws://' + window.location.host + '/ws/sc/' + groupName + '/'
+    );
+
+    socket.onopen = function(){
+        console.log("Websocket connected");
+    }
+
+    socket.onmessage = function(event){
+        // Here code for the received data from the application
+
+    }
+
+    socket.onclose = function(){
+        // Here code which is relevent on closing the connection from application
+        
+    }
+</script>
+
+<script>
+    let box = document.getElementById("message");
+    box.scrollTop = box.scrollHeight;
+</script>
+
+{% endblock javascript %}

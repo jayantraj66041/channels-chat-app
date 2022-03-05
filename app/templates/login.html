@@ -9,7 +9,7 @@
                 <p class="lead p-0 m-0 fw-normal text-muted">User Login</p>
             </div>
             <div class="card-body">
-                <form action="" method="post">
+                <form action="{% url 'login' %}" method="post">
                     {% csrf_token %}
                     <div class="mb-2">
                         <label for="username" class="small text-muted">Username</label>

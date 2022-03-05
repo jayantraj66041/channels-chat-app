@@ -7,3 +7,6 @@ class Message(models.Model):
     timedate = models.DateTimeField(auto_now=True)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sender")
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, related_name="receiver")
+
+    def __str__(self):
+        return self.msg
