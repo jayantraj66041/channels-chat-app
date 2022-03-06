@@ -1,7 +1,10 @@
+from django.dispatch import receiver
 from django.shortcuts import redirect, render
 from django.views import View
 from django.contrib.auth.models import User
 from django.contrib.auth import login, authenticate, logout
+from app.models import Message
+from django.db.models import Q
 # Create your views here.
 
 class Home(View):
@@ -55,6 +58,7 @@ class Dashboard(View):
             }
             if username != None:
                 content['receiver'] = User.objects.get(username=username)
+                content['chats'] = Message.objects.filter(Q(Q(sender__username=request.user.username) & Q(receiver__username=username)) | Q(Q(sender__username=username) & Q(receiver__username=request.user.username))).order_by('id')
                 return render(request, 'chat.html', content)
             else:
                 return render(request, 'dashboard.html', content)

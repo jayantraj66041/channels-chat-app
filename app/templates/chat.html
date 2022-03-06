@@ -8,12 +8,18 @@
             {{receiver.first_name}} {{receiver.last_name}}
         </div>
         <div class="card-body" id="message" style="height: 370px; overflow-y: auto;">
+            {% for chat in chats %}
+            {% if chat.sender.username == receiver.username and chat.receiver.username == me.username %}
             <div class="row">
-                <h4 class="m-0"><span class="badge bg-secondary rounded-pill">Hello, How are you?</span></h4>
+                <h4 class="m-0"><span class="badge bg-secondary rounded-pill">{{chat.msg}}</span></h4>
             </div>
+            {% endif %}
+            {% if chat.sender.username == me.username and chat.receiver.username == receiver.username %}
             <div class="row">
-                <h4><span class="badge bg-primary float-end rounded-pill">I am fine. You?</span></h4=>
+                <h4><span class="badge bg-primary float-end rounded-pill">{{chat.msg}}</span></h4>
             </div>
+            {% endif %}
+            {% endfor %}
         </div>
         <div class="card-footer">
             <div class="btn-group w-100">
@@ -28,8 +34,9 @@
 {% block javascript %}
 
 <script>
+
     let socket = new WebSocket(
-        'ws://' + window.location.host + '/ws/sc/' + groupName + '/'
+        'ws://' + window.location.host + '/ws/chat/'
     );
 
     socket.onopen = function(){
@@ -38,18 +45,30 @@
 
     socket.onmessage = function(event){
         // Here code for the received data from the application
-
+        console.log(JSON.parse(event.data));
     }
 
     socket.onclose = function(){
         // Here code which is relevent on closing the connection from application
         
     }
+
+    let msg = document.getElementById("msg");
+
+    msg.oninput = function(){
+        //console.log("type");
+        socket.send(JSON.stringify({
+            'is_typing': true
+        }));
+    }
+
 </script>
 
 <script>
+
     let box = document.getElementById("message");
     box.scrollTop = box.scrollHeight;
+
 </script>
 
 {% endblock javascript %}
