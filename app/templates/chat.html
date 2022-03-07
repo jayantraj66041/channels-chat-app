@@ -11,7 +11,7 @@
             {% for chat in chats %}
             {% if chat.sender.username == receiver.username and chat.receiver.username == me.username %}
             <div class="row">
-                <h4 class="m-0"><span class="badge bg-secondary rounded-pill">{{chat.msg}}</span></h4>
+                <h4><span class="badge bg-secondary rounded-pill">{{chat.msg}}</span></h4>
             </div>
             {% endif %}
             {% if chat.sender.username == me.username and chat.receiver.username == receiver.username %}
@@ -33,10 +33,12 @@
 
 {% block javascript %}
 
+{{receiver.username|json_script:"receiver-username"}}
+
 <script>
 
     let socket = new WebSocket(
-        'ws://' + window.location.host + '/ws/chat/'
+        'ws://' + window.location.host + '/ws/chat/' + JSON.parse(document.getElementById('receiver-username').textContent) + '/'
     );
 
     socket.onopen = function(){
@@ -46,6 +48,27 @@
     socket.onmessage = function(event){
         // Here code for the received data from the application
         console.log(JSON.parse(event.data));
+        data = JSON.parse(event.data);
+
+        let span = document.createElement("span");
+        span.classList.add("badge", "rounded-pill");
+        if(data['receiver'] == JSON.parse(document.getElementById('receiver-username').textContent)){
+            span.classList.add("float-end");
+            span.classList.add("bg-primary");
+        }
+        else{
+            span.classList.add("bg-secondary");
+        }
+        span.innerHTML = data['msg'];
+        let h4 = document.createElement("h4");
+        h4.appendChild(span);
+        let row = document.createElement('div');
+        row.classList.add("row");
+        row.appendChild(h4);
+        document.getElementById("message").appendChild(row);
+
+        let box = document.getElementById("message");
+        box.scrollTop = box.scrollHeight;
     }
 
     socket.onclose = function(){
@@ -55,11 +78,13 @@
 
     let msg = document.getElementById("msg");
 
-    msg.oninput = function(){
+    send.onclick = function(){
         //console.log("type");
         socket.send(JSON.stringify({
-            'is_typing': true
+            'msg': msg.value,
+            'receiver': JSON.parse(document.getElementById('receiver-username').textContent)
         }));
+        msg.value = "";
     }
 
 </script>

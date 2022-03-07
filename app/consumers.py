@@ -1,24 +1,38 @@
-from channels.generic.websocket import AsyncJsonWebsocketConsumer
+from channels.generic.websocket import JsonWebsocketConsumer
 from app.models import Message
-from asgiref.sync import sync_to_async
+from django.contrib.auth.models import User
+from asgiref.sync import async_to_sync
 
-class ChatAsyncWebsocketConsumer(AsyncJsonWebsocketConsumer):
-    async def connect(self):
+class ChatAsyncWebsocketConsumer(JsonWebsocketConsumer):
+    def connect(self):
         self.groupname = ""
-        if str(self.scope['user']) > "harshraj":
-            self.groupname = str(self.scope['user']) + "harshraj"
+        receiver = self.scope['url_route']['kwargs']['receiver']
+        if str(self.scope['user']) > receiver:
+            self.groupname = str(self.scope['user']) + receiver
         else:
-            self.groupname = "harshraj" + str(self.scope['user'])
-        print(self.groupname)
-        print(self.channel_name)
-        self.channel_layer.group_add(self.groupname, self.channel_name)
+            self.groupname = receiver + str(self.scope['user'])
+        # print(self.groupname)
+        # print(self.channel_name)
+        async_to_sync(self.channel_layer.group_add)(
+            self.groupname, 
+            self.channel_name
+        )
 
-        await self.accept()
+        self.accept()
         # print("ok")
     
-    async def receive_json(self, content, **kwargs):
-        print(content)
-        self.channel_layer.group_send(
+    def receive_json(self, content, **kwargs):
+        # print("first", content)
+
+        content['sender'] = str(self.scope['user'])
+
+        message = Message()
+        message.msg = content['msg']
+        message.sender = User.objects.get(username=content['sender'])
+        message.receiver = User.objects.get(username=content['receiver'])
+        message.save()
+
+        async_to_sync(self.channel_layer.group_send)(
             self.groupname,
             {
                 'type': 'chat.msg',
@@ -26,9 +40,10 @@ class ChatAsyncWebsocketConsumer(AsyncJsonWebsocketConsumer):
             }
         )
 
-    async def chat_msg(self, event):
-        print("test",event)
-        await self.send_json(event['message'])
+    def chat_msg(self, event):
+        # event['message']['sender'] = str(self.scope['user'])
+        # print("test",event)
+        self.send_json(event['message'])
     
-    async def disconnect(self, code):
+    def disconnect(self, code):
         print("Disconnect -", code)
